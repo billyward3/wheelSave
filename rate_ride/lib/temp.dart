@@ -30,14 +30,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -49,25 +41,20 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             const Text(
-              'You have pushed the button this many times:',
+              'Accelerometer Data Goes Here',
               style: TextStyle(color: Colors.white),
             ),
-            Text(
-              '$_counter',
-              style: TextStyle(fontSize: 24, color: Colors.white),
+            const Text(
+              'Real-Time Location Data Goes Here',
+              style: TextStyle(color: Colors.white),
             ),
             SizedBox(height: 20),
             ElevatedButton(
-              onPressed: _incrementCounter,
+              onPressed: () {},
               child: const Text('Start'),
             ),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
       ),
     );
   }
