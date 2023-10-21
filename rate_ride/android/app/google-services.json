@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "542744473879",
+    "project_id": "rate-ride",
+    "storage_bucket": "rate-ride.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:542744473879:android:d15796284c69ed8f264752",
+        "android_client_info": {
+          "package_name": "com.example.rate_ride"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAPWdb9jONVR3owLj6A0V-6QxSIEHOHbo8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
