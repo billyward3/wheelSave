@@ -1,35 +1,16 @@
-import 'package:flutter/material.dart';
-
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        scaffoldBackgroundColor: Colors.black,
-      ),
-      home: const MyHomePage(title: 'Rate Ride'),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
+// ... [your previous imports here]
 
 class _MyHomePageState extends State<MyHomePage> {
+  late Future<Position> _locationData;
+  Stream<AccelerometerEvent>? _accelerometerStream;
+  bool _isStarted = false; // Control the display of data
+
+  @override
+  void initState() {
+    super.initState();
+    _accelerometerStream = accelerometerEvents;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -40,17 +21,62 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text(
-              'Accelerometer Data Goes Here',
-              style: TextStyle(color: Colors.white),
-            ),
-            const Text(
-              'Real-Time Location Data Goes Here',
-              style: TextStyle(color: Colors.white),
-            ),
+            // Display accelerometer data if _isStarted is true
+            _isStarted
+                ? StreamBuilder<AccelerometerEvent>(
+                    stream: _accelerometerStream,
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        return Text(
+                          'Accelerometer: ${snapshot.data}',
+                          style: TextStyle(color: Colors.white),
+                        );
+                      } else if (snapshot.hasError) {
+                        return Text(
+                          'Error: ${snapshot.error}',
+                          style: TextStyle(color: Colors.red),
+                        );
+                      }
+                      return const Text('Waiting for accelerometer data...');
+                    },
+                  )
+                : Container(), // Empty container when not started
+
+            // Fetch and display geolocation data if _isStarted is true
+            _isStarted
+                ? FutureBuilder<Position>(
+                    future: _locationData,
+                    builder:
+                        (BuildContext context, AsyncSnapshot<Position> snapshot) {
+                      if (snapshot.connectionState == ConnectionState.done) {
+                        if (snapshot.hasError) {
+                          return Text(
+                            'Location Error: ${snapshot.error}',
+                            style: TextStyle(color: Colors.red),
+                          );
+                        }
+                        return Text(
+                          'Location: ${snapshot.data}',
+                          style: TextStyle(color: Colors.white),
+                        );
+                      } else {
+                        return const Text('Fetching location data...');
+                      }
+                    },
+                  )
+                : Container(), // Empty container when not started
+
             SizedBox(height: 20),
+
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                setState(() {
+                  _isStarted = true;
+                  // Fetch current position when button is pressed
+                  _locationData = Geolocator.getCurrentPosition(
+                      desiredAccuracy: LocationAccuracy.high);
+                });
+              },
               child: const Text('Start'),
             ),
           ],

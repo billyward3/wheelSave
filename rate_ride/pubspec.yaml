@@ -28,6 +28,8 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  sensors_plus: ^3.1.0
+  geolocator: ^10.1.0
   flutter:
     sdk: flutter
 
