@@ -38,8 +38,11 @@ Rate Ride is an app that helps you save money on insurance by tracking your driv
 
 ## Authors
 
-- [Your Name](https://github.com/yourusername)
-
+- [Jaydin Freeman](https://github.com/TheManWhoLikesToCode)
+- [Gabe Huttemann]
+- [William Kwon]
+- [Muhannad Alghamdi]
+  
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
