@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:rate_ride/pages/export.dart'; // Import your ExportPage here
 import 'package:sensors_plus/sensors_plus.dart';
@@ -214,9 +215,16 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              'Safety Score',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            const Image(
+                image: AssetImage(
+                    'assets/Logo.png')), // Load and display the image
+            Padding(
+              padding: const EdgeInsets.only(
+                  top: 20.0), // Add space only above this text
+              child: Text(
+                'Safety Score',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
             ),
             Text(
               '${safetyScore.toStringAsFixed(2)}',
@@ -252,8 +260,9 @@ class _MyHomePageState extends State<MyHomePage> {
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.drive_eta), label: 'Trips'),
           BottomNavigationBarItem(
-              icon: Icon(Icons.trending_up),
-              label: 'Export'), // Change 'Leaderboard' to 'Export'
+            icon: Icon(Icons.trending_up),
+            label: 'Export',
+          ), // Change 'Leaderboard' to 'Export'
         ],
         onTap: (index) {
           if (index == 1) {
@@ -266,7 +275,8 @@ class _MyHomePageState extends State<MyHomePage> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => ExportPage()), // Change to ExportPage
+                builder: (context) => ExportPage(),
+              ), // Change to ExportPage
             );
           }
         },
