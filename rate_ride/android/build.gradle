@@ -6,7 +6,18 @@ buildscript {
     }
 
     dependencies {
+        implementation 'com.firebaseui:firebase-ui-auth:7.2.0'
+        classpath 'com.google.gms:google-services:4.4.0'
         classpath 'com.android.tools.build:gradle:7.3.0'
+    
+        // Import the BoM for the Firebase platform
+        implementation(platform("com.google.firebase:firebase-bom:32.4.0"))
+
+        // Add the dependency for the Cloud Storage library
+        // When using the BoM, you don't specify versions in Firebase library dependencies
+        implementation("com.google.firebase:firebase-storage")
+
+
         // START: FlutterFire Configuration
         classpath 'com.google.gms:google-services:4.3.10'
         // END: FlutterFire Configuration
@@ -31,4 +42,12 @@ subprojects {
 
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
+}
+
+plugins {
+  // ...
+
+  // Add the dependency for the Google services Gradle plugin
+  id 'com.google.gms.google-services' version '4.4.0' apply false
+
 }
