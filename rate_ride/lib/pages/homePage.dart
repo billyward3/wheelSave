@@ -1,13 +1,11 @@
-// ignore_for_file: file_names
-
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:rate_ride/pages/leaderboard.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'tripHistory.dart';
 import 'register.dart';
 
-// CustomAppBar now has the Sign Out button at the top and lowers the safety score
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final double score;
   const CustomAppBar(
@@ -17,7 +15,6 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     return AppBar(
       leading: IconButton(
-        // Add leading IconButton to fix invisible hamburger icon
         icon: const Icon(Icons.menu, color: Colors.black),
         onPressed: () => Scaffold.of(context).openDrawer(),
       ),
@@ -26,8 +23,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: Colors.white,
       actions: [
         IconButton(
-          icon: const Icon(Icons.logout,
-              color: Colors.black), // Update icon color
+          icon: const Icon(Icons.logout, color: Colors.black),
           onPressed: () {
             Navigator.push(
               context,
@@ -119,7 +115,7 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       theme: ThemeData(
         primarySwatch: Colors.blue,
-        scaffoldBackgroundColor: Colors.white, // Change background to white
+        scaffoldBackgroundColor: Colors.white,
       ),
       home: const MyHomePage(title: 'Rate Ride'),
     );
@@ -149,11 +145,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   List<String> tripLogs = [];
 
-  // Convert speed to mph.
   double metersPerSecToMilesPerHour(double speedInMetersPerSec) =>
       speedInMetersPerSec * 2.23694;
 
-  // Calculate and update safety score.
   void updateSafetyScore(
       AccelerometerEvent accEvent, double speed, double averageSpeed) {
     if (speed > 0.5) {
@@ -167,12 +161,45 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  StreamController<double> speedStream = StreamController<double>.broadcast();
+
+  void updateSpeed() async {
+    while (_isStarted) {
+      try {
+        AccelerometerEvent accEvent = await accelerometerEvents.first;
+        Position? position = await Geolocator.getCurrentPosition();
+
+        if (lastPosition != null) {
+          totalDistance += (Geolocator.distanceBetween(
+                  lastPosition!.latitude,
+                  lastPosition!.longitude,
+                  position.latitude,
+                  position.longitude) /
+              1609.34);
+        }
+        lastPosition = position;
+        speed = metersPerSecToMilesPerHour(position.speed);
+        totalSpeed += speed;
+        numUpdates++;
+        averageSpeed = totalSpeed / numUpdates;
+
+        speedStream.add(speed);
+        updateSafetyScore(accEvent, speed, averageSpeed);
+
+        await Future.delayed(Duration(seconds: 1));
+      } catch (e) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(e.toString())));
+      }
+    }
+  }
+
+  StreamController averageSpeedStream = StreamController<double>.broadcast();
   void recordData() async {
     AccelerometerEvent accEvent = await accelerometerEvents.first;
     Position? position = await Geolocator.getCurrentPosition();
 
     if (lastPosition != null) {
-      // converted from meters to miles
       totalDistance += (Geolocator.distanceBetween(lastPosition!.latitude,
               lastPosition!.longitude, position.latitude, position.longitude) /
           1609.34);
@@ -182,6 +209,8 @@ class _MyHomePageState extends State<MyHomePage> {
     totalSpeed += speed;
     numUpdates++;
     averageSpeed = totalSpeed / numUpdates;
+    speedStream.add(speed);
+    averageSpeedStream.add(averageSpeed);
     updateSafetyScore(accEvent, speed, averageSpeed);
   }
 
@@ -190,9 +219,6 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() {
         _isStarted = false;
         timer?.cancel();
-        tripLogs.add(
-          'Safety Score: ${safetyScore.toStringAsFixed(2)}, Speed: ${speed.toStringAsFixed(2)} mph, Average Speed: ${averageSpeed.toStringAsFixed(2)} mph, Total Distance: ${totalDistance.toStringAsFixed(2)} meters',
-        );
         totalSpeed = 0.0;
         totalDistance = 0.0;
         numUpdates = 0;
@@ -204,6 +230,8 @@ class _MyHomePageState extends State<MyHomePage> {
           timer = Timer.periodic(const Duration(seconds: 1), (timer) async {
             recordData();
           });
+
+          updateSpeed();
         });
       } catch (e) {
         ScaffoldMessenger.of(context)
@@ -228,50 +256,43 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(score: safetyScore, context: context),
-      drawer: const Drawer(
-          // Unchanged
-          ),
-      body: StreamBuilder<double>(
-        stream: safetyScoreStream.stream,
-        initialData: safetyScore,
-        builder: (context, snapshot) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('Safety Score',
-                    style:
-                        TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-                Text('${snapshot.data?.toStringAsFixed(2)}',
-                    style:
-                        TextStyle(fontSize: 48, fontWeight: FontWeight.bold)),
-                SafetyInfo(
-                    title: 'Speed', value: '${speed.toStringAsFixed(2)} mph'),
-                SafetyInfo(
-                    title: 'Average Speed',
-                    value: '${averageSpeed.toStringAsFixed(2)} mph'),
-                ElevatedButton(
-                  onPressed: toggleTracking,
-                  child: Text(_isStarted ? 'STOP' : 'START'),
-                  style: ElevatedButton.styleFrom(
-                    primary: _isStarted
-                        ? Colors.red
-                        : Colors.teal, // Conditional color change
-                    onPrimary: Colors.white,
-                    padding: EdgeInsets.symmetric(horizontal: 50, vertical: 20),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30.0),
-                    ),
-                    shadowColor: _isStarted
-                        ? Colors.redAccent
-                        : Colors.tealAccent, // Conditional shadow color change
-                    elevation: 5,
-                  ),
-                ),
-              ],
+      drawer: const Drawer(),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Safety Score',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
-          );
-        },
+            Text(
+              '${safetyScore.toStringAsFixed(2)}',
+              style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
+            ),
+            SafetyInfo(
+              title: 'Speed',
+              value: '${speed.toStringAsFixed(2)} mph',
+            ),
+            SafetyInfo(
+              title: 'Average Speed',
+              value: '${averageSpeed.toStringAsFixed(2)} mph',
+            ),
+            ElevatedButton(
+              onPressed: toggleTracking,
+              child: Text(_isStarted ? 'STOP' : 'START'),
+              style: ElevatedButton.styleFrom(
+                primary: _isStarted ? Colors.red : Colors.teal,
+                onPrimary: Colors.white,
+                padding: EdgeInsets.symmetric(horizontal: 50, vertical: 20),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30.0),
+                ),
+                shadowColor: _isStarted ? Colors.redAccent : Colors.tealAccent,
+                elevation: 5,
+              ),
+            ),
+          ],
+        ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const [
@@ -285,6 +306,12 @@ class _MyHomePageState extends State<MyHomePage> {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => TripHistoryPage()),
+            );
+          }
+          if (index == 2) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => LeaderboardPage()),
             );
           }
         },
