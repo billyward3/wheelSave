@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class LeaderboardPage extends StatelessWidget {
+  const LeaderboardPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -26,12 +28,12 @@ class LeaderboardPage extends StatelessWidget {
                 backgroundColor: Colors.teal,
                 child: Text(
                   '${index + 1}',
-                  style: TextStyle(color: Colors.white),
+                  style: const TextStyle(color: Colors.white),
                 ),
               ),
               title: Text(
                 'User ${index + 1}', // Replace with user names or data
-                style: TextStyle(fontWeight: FontWeight.bold),
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               subtitle: Text(
                 'Score: ${100 - index}', // Replace with user scores or data

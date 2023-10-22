@@ -25,10 +25,10 @@ class TripHistoryPage extends StatelessWidget {
                 
                 backgroundColor: Colors.teal,
                 child:
-                    Text('${index + 1}', style: TextStyle(color: Colors.white)),
+                    Text('${index + 1}', style: const TextStyle(color: Colors.white)),
               ),
               title: Text('Trip ${index + 1}',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+                  style: const TextStyle(fontWeight: FontWeight.bold)),
               subtitle: Text('Details for Trip ${index + 1}'),
               tileColor: index % 2 == 0
                   ? Colors.teal.withOpacity(

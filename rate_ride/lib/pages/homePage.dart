@@ -186,7 +186,7 @@ class _MyHomePageState extends State<MyHomePage> {
         speedStream.add(speed);
         updateSafetyScore(accEvent, speed, averageSpeed);
 
-        await Future.delayed(Duration(seconds: 1));
+        await Future.delayed(const Duration(seconds: 1));
       } catch (e) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(e.toString())));
@@ -261,13 +261,13 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
+            const Text(
               'Safety Score',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             Text(
-              '${safetyScore.toStringAsFixed(2)}',
-              style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
+              safetyScore.toStringAsFixed(2),
+              style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
             ),
             SafetyInfo(
               title: 'Speed',
@@ -279,17 +279,16 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             ElevatedButton(
               onPressed: toggleTracking,
-              child: Text(_isStarted ? 'STOP' : 'START'),
               style: ElevatedButton.styleFrom(
-                primary: _isStarted ? Colors.red : Colors.teal,
-                onPrimary: Colors.white,
-                padding: EdgeInsets.symmetric(horizontal: 50, vertical: 20),
+                foregroundColor: Colors.white, backgroundColor: _isStarted ? Colors.red : Colors.teal,
+                padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30.0),
                 ),
                 shadowColor: _isStarted ? Colors.redAccent : Colors.tealAccent,
                 elevation: 5,
               ),
+              child: Text(_isStarted ? 'STOP' : 'START'),
             ),
           ],
         ),
@@ -311,7 +310,7 @@ class _MyHomePageState extends State<MyHomePage> {
           if (index == 2) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => LeaderboardPage()),
+              MaterialPageRoute(builder: (context) => const LeaderboardPage()),
             );
           }
         },
