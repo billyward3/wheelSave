@@ -4,8 +4,41 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:sensors_plus/sensors_plus.dart';
+import 'package:sqflite/sqflite.dart';
 import 'tripHistory.dart';
 import 'register.dart';
+
+class Trip {
+  final double safetyScore;
+  final double speed;
+  final double avgSpeed;
+  final double distance;
+  final double maxGs;
+  final double minGs;
+  final String timestamp;
+
+  Trip({
+    required this.safetyScore,
+    required this.speed,
+    required this.avgSpeed,
+    required this.distance,
+    required this.maxGs,
+    required this.minGs,
+    required this.timestamp,
+  });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'safetyScore': safetyScore,
+      'speed': speed,
+      'avgSpeed': avgSpeed,
+      'distance': distance,
+      'maxGs': maxGs,
+      'minGs': minGs,
+      'timestamp': timestamp,
+    };
+  }
+}
 
 // CustomAppBar now has the Sign Out button at the top and lowers the safety score
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -147,8 +180,6 @@ class _MyHomePageState extends State<MyHomePage> {
   StreamController<double> safetyScoreStream =
       StreamController<double>.broadcast();
 
-  List<String> tripLogs = [];
-
   // Convert speed to mph.
   double metersPerSecToMilesPerHour(double speedInMetersPerSec) =>
       speedInMetersPerSec * 2.23694;
@@ -185,14 +216,32 @@ class _MyHomePageState extends State<MyHomePage> {
     updateSafetyScore(accEvent, speed, averageSpeed);
   }
 
+  Future<void> saveTripToDatabase() async {
+    final trip = Trip(
+      safetyScore: safetyScore,
+      speed: speed,
+      avgSpeed: averageSpeed,
+      distance: totalDistance,
+      maxGs: 0.0, // Replace with actual value
+      minGs: 0.0, // Replace with actual value
+      timestamp: DateTime.now().toIso8601String(),
+    );
+
+    // SQLite database write operation
+    final Database db = await openDatabase('trip_database.db');
+    await db.insert('trips', trip.toMap());
+  }
+
   void toggleTracking() async {
     if (_isStarted) {
       setState(() {
         _isStarted = false;
         timer?.cancel();
-        tripLogs.add(
-          'Safety Score: ${safetyScore.toStringAsFixed(2)}, Speed: ${speed.toStringAsFixed(2)} mph, Average Speed: ${averageSpeed.toStringAsFixed(2)} mph, Total Distance: ${totalDistance.toStringAsFixed(2)} meters',
-        );
+        saveTripToDatabase();
+        safetyScoreStream.close();
+        totalDistance = 0.0;
+        speed = 0.0;
+        averageSpeed = 0.0;
         totalSpeed = 0.0;
         totalDistance = 0.0;
         numUpdates = 0;
@@ -210,11 +259,6 @@ class _MyHomePageState extends State<MyHomePage> {
             .showSnackBar(SnackBar(content: Text(e.toString())));
       }
     }
-  }
-
-  @override
-  void initState() {
-    super.initState();
   }
 
   @override
