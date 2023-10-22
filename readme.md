@@ -40,7 +40,7 @@ Rate Ride is an app that helps you save money on insurance by tracking your driv
 
 - [Jaydin Freeman](https://github.com/TheManWhoLikesToCode)
 - [Gabe Huttemann]
-- [William Kwon]
+- [William]
 - [Muhannad Alghamdi]
   
 ## License
