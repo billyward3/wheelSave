@@ -1,13 +1,12 @@
-// ignore_for_file: file_names
-
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'tripHistory.dart';
-import 'register.dart';
+import 'registerPage.dart';
+import 'leaderboardPage.dart';
 
-// CustomAppBar now has the Sign Out button at the top and lowers the safety score
+
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final double score;
   const CustomAppBar(
@@ -17,7 +16,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     return AppBar(
       leading: IconButton(
-        // Add leading IconButton to fix invisible hamburger icon
+        
         icon: const Icon(Icons.menu, color: Colors.black),
         onPressed: () => Scaffold.of(context).openDrawer(),
       ),
@@ -27,7 +26,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       actions: [
         IconButton(
           icon: const Icon(Icons.logout,
-              color: Colors.black), // Update icon color
+              color: Colors.black), 
           onPressed: () {
             Navigator.push(
               context,
@@ -119,7 +118,7 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       theme: ThemeData(
         primarySwatch: Colors.blue,
-        scaffoldBackgroundColor: Colors.white, // Change background to white
+        scaffoldBackgroundColor: Colors.white, 
       ),
       home: const MyHomePage(title: 'Rate Ride'),
     );
@@ -149,11 +148,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
   List<String> tripLogs = [];
 
-  // Convert speed to mph.
+  
   double metersPerSecToMilesPerHour(double speedInMetersPerSec) =>
       speedInMetersPerSec * 2.23694;
 
-  // Calculate and update safety score.
+  
   void updateSafetyScore(
       AccelerometerEvent accEvent, double speed, double averageSpeed) {
     if (speed > 0.5) {
@@ -172,7 +171,7 @@ class _MyHomePageState extends State<MyHomePage> {
     Position? position = await Geolocator.getCurrentPosition();
 
     if (lastPosition != null) {
-      // converted from meters to miles
+      
       totalDistance += (Geolocator.distanceBetween(lastPosition!.latitude,
               lastPosition!.longitude, position.latitude, position.longitude) /
           1609.34);
@@ -229,7 +228,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: CustomAppBar(score: safetyScore, context: context),
       drawer: const Drawer(
-          // Unchanged
+          
           ),
       body: StreamBuilder<double>(
         stream: safetyScoreStream.stream,
@@ -256,7 +255,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   style: ElevatedButton.styleFrom(
                     primary: _isStarted
                         ? Colors.red
-                        : Colors.teal, // Conditional color change
+                        : Colors.teal, 
                     onPrimary: Colors.white,
                     padding: EdgeInsets.symmetric(horizontal: 50, vertical: 20),
                     shape: RoundedRectangleBorder(
@@ -264,7 +263,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                     shadowColor: _isStarted
                         ? Colors.redAccent
-                        : Colors.tealAccent, // Conditional shadow color change
+                        : Colors.tealAccent, 
                     elevation: 5,
                   ),
                 ),
@@ -285,6 +284,12 @@ class _MyHomePageState extends State<MyHomePage> {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => TripHistoryPage()),
+            );
+          }
+          if (index == 2) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => LeaderboardPage()),
             );
           }
         },
