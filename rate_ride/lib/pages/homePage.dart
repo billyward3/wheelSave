@@ -129,13 +129,15 @@ class ControlButton extends StatelessWidget {
 
 class GeolocatorService {
   Future<Position?> determinePosition() async {
-    LocationPermission permission = await Geolocator.checkPermission();
+    LocationPermission permission;
+    permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.deniedForever) {
-        return Future.error(
-            'Location permissions are permanently denied. Enable them in settings.');
+        return Future.error('Location Not Available');
       }
+    } else {
+      throw Exception('Error');
     }
     return await Geolocator.getCurrentPosition();
   }
@@ -198,6 +200,9 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  StreamController<double> speedStream = StreamController<double>.broadcast();
+  StreamController<double> avgSpeedStream = StreamController<double>.broadcast();
+
   void recordData() async {
     AccelerometerEvent accEvent = await accelerometerEvents.first;
     Position? position = await Geolocator.getCurrentPosition();
@@ -213,6 +218,8 @@ class _MyHomePageState extends State<MyHomePage> {
     totalSpeed += speed;
     numUpdates++;
     averageSpeed = totalSpeed / numUpdates;
+    speedStream.add(speed);
+    avgSpeedStream.add(averageSpeed);
     updateSafetyScore(accEvent, speed, averageSpeed);
   }
 
@@ -229,6 +236,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     // SQLite database write operation
     final Database db = await openDatabase('trip_database.db');
+    
     await db.insert('trips', trip.toMap());
   }
 
@@ -283,26 +291,24 @@ class _MyHomePageState extends State<MyHomePage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text('Safety Score',
+                const Text('Safety Score',
                     style:
                         TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
                 Text('${snapshot.data?.toStringAsFixed(2)}',
-                    style:
-                        TextStyle(fontSize: 48, fontWeight: FontWeight.bold)),
+                    style: const TextStyle(
+                        fontSize: 48, fontWeight: FontWeight.bold)),
                 SafetyInfo(
-                    title: 'Speed', value: '${speed.toStringAsFixed(2)} mph'),
+                    title: 'Speed', value: '${snapshot.data?.toStringAsFixed(2)}'),
                 SafetyInfo(
                     title: 'Average Speed',
-                    value: '${averageSpeed.toStringAsFixed(2)} mph'),
+                    value: '${snapshot.data?.toStringAsFixed(2)} mph'),
                 ElevatedButton(
                   onPressed: toggleTracking,
-                  child: Text(_isStarted ? 'STOP' : 'START'),
                   style: ElevatedButton.styleFrom(
-                    primary: _isStarted
-                        ? Colors.red
-                        : Colors.teal, // Conditional color change
-                    onPrimary: Colors.white,
-                    padding: EdgeInsets.symmetric(horizontal: 50, vertical: 20),
+                    foregroundColor: Colors.white,
+                    backgroundColor: _isStarted ? Colors.red : Colors.teal,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 50, vertical: 20),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30.0),
                     ),
@@ -311,6 +317,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         : Colors.tealAccent, // Conditional shadow color change
                     elevation: 5,
                   ),
+                  child: Text(_isStarted ? 'STOP' : 'START'),
                 ),
               ],
             ),
