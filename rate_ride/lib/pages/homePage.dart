@@ -3,12 +3,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:sensors_plus/sensors_plus.dart';
 import 'tripHistory.dart';
-
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final double score;
-  const CustomAppBar({super.key, required this.score, required BuildContext context});
+  const CustomAppBar(
+      {super.key, required this.score, required BuildContext context});
 
   @override
   Widget build(BuildContext context) {
@@ -172,33 +173,46 @@ class _MyHomePageState extends State<MyHomePage> {
   double totalSpeed = 0.0;
   int numUpdates = 0;
   Position? lastPosition;
-
+  AccelerometerEvent? _accelerometerEvent;
   StreamController<double> safetyScoreStream =
       StreamController<double>.broadcast();
 
   List<String> tripLogs = [];
 
-  void updateSafetyMetrics(Position? currentPosition) {
-    if (lastPosition != null && currentPosition != null) {
-      totalDistance += Geolocator.distanceBetween(
-        lastPosition!.latitude,
-        lastPosition!.longitude,
-        currentPosition.latitude,
-        currentPosition.longitude,
-      );
-      speed = currentPosition.speed * 2.23694;
-      totalSpeed += speed;
-      numUpdates++;
-      averageSpeed = totalSpeed / numUpdates;
-      safetyScore -= 0.1;
+  // Convert speed to mph.
+  double metersPerSecToMilesPerHour(double speedInMetersPerSec) =>
+      speedInMetersPerSec * 2.23694;
+
+  // Calculate and update safety score.
+  void updateSafetyScore(
+      AccelerometerEvent accEvent, double speed, double averageSpeed) {
+    if (speed > 0.5) {
+      if (accEvent.x > 4) {
+        safetyScore -= (0.2 * (accEvent.x - 3).clamp(0, 5));
+      }
+      if (accEvent.x < 5) {
+        safetyScore -= (0.3 * (accEvent.x - 4).clamp(0, 5));
+      }
+      safetyScore.clamp(0, 100);
     }
-    lastPosition = currentPosition;
-    safetyScoreStream.sink.add(safetyScore);
   }
 
   void recordData() async {
+    AccelerometerEvent accEvent = await accelerometerEvents.first;
     Position? position = await Geolocator.getCurrentPosition();
-    updateSafetyMetrics(position);
+
+    if (lastPosition != null) {
+      // converted from meters to miles
+      totalDistance += (Geolocator.distanceBetween(lastPosition!.latitude,
+              lastPosition!.longitude, position.latitude, position.longitude) /
+          1609.34);
+    }
+    lastPosition = position;
+    speed = metersPerSecToMilesPerHour(position.speed);
+    totalSpeed += speed;
+    numUpdates++;
+    averageSpeed = totalSpeed / numUpdates;
+    updateSafetyScore(accEvent, speed, averageSpeed);
   }
 
   void toggleTracking() async {
