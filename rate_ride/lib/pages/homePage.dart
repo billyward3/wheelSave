@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:rate_ride/pages/leaderboard.dart';
+import 'package:rate_ride/pages/export.dart'; // Import your ExportPage here
 import 'package:sensors_plus/sensors_plus.dart';
 import 'tripHistory.dart';
 
@@ -207,18 +207,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    timer?.cancel();
-    safetyScoreStream.close();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: const Drawer(),
@@ -264,7 +252,8 @@ class _MyHomePageState extends State<MyHomePage> {
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.drive_eta), label: 'Trips'),
           BottomNavigationBarItem(
-              icon: Icon(Icons.trending_up), label: 'Leaderboard'),
+              icon: Icon(Icons.trending_up),
+              label: 'Export'), // Change 'Leaderboard' to 'Export'
         ],
         onTap: (index) {
           if (index == 1) {
@@ -276,7 +265,8 @@ class _MyHomePageState extends State<MyHomePage> {
           if (index == 2) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => LeaderboardPage()),
+              MaterialPageRoute(
+                  builder: (context) => ExportPage()), // Change to ExportPage
             );
           }
         },
