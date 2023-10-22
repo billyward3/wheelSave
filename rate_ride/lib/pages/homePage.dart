@@ -1,11 +1,45 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'tripHistory.dart';
 import 'registerPage.dart';
 import 'leaderboardPage.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:path/path.dart';
 
+// Database Helper Class
+class DatabaseHelper {
+  Future<Database> database() async {
+    return openDatabase(
+      join(await getDatabasesPath(), 'trip_database.db'),
+      onCreate: (db, version) {
+        return db.execute(
+          "CREATE TABLE trips(id INTEGER PRIMARY KEY AUTOINCREMENT, safetyScore REAL, averageSpeed REAL, totalDistance REAL, timestamp TEXT)",
+        );
+      },
+      version: 1,
+    );
+  }
+
+  Future<void> logTrip(double safetyScore, double speed, double averageSpeed,
+      double totalDistance, double maxGs, double minGs) async {
+    final db = await database();
+    await db.insert(
+      'trips',
+      {
+        'safetyScore': safetyScore,
+        'speed': speed,
+        'avgSpeed': averageSpeed,
+        'distance': totalDistance,
+        'maxGs': maxGs,
+        'minGs': minGs,
+        'timestamp': DateTime.now().toIso8601String(),
+      },
+    );
+  }
+}
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final double score;
@@ -16,7 +50,6 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     return AppBar(
       leading: IconButton(
-        
         icon: const Icon(Icons.menu, color: Colors.black),
         onPressed: () => Scaffold.of(context).openDrawer(),
       ),
@@ -25,8 +58,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: Colors.white,
       actions: [
         IconButton(
-          icon: const Icon(Icons.logout,
-              color: Colors.black), 
+          icon: const Icon(Icons.logout, color: Colors.black),
           onPressed: () {
             Navigator.push(
               context,
@@ -118,7 +150,7 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       theme: ThemeData(
         primarySwatch: Colors.blue,
-        scaffoldBackgroundColor: Colors.white, 
+        scaffoldBackgroundColor: Colors.white,
       ),
       home: const MyHomePage(title: 'Rate Ride'),
     );
@@ -141,6 +173,8 @@ class _MyHomePageState extends State<MyHomePage> {
   double speed = 0.0;
   double averageSpeed = 0.0;
   double totalSpeed = 0.0;
+  double maxGs = 0.0;
+  double minGs = 0.0;
   int numUpdates = 0;
   Position? lastPosition;
   StreamController<double> safetyScoreStream =
@@ -148,11 +182,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   List<String> tripLogs = [];
 
-  
   double metersPerSecToMilesPerHour(double speedInMetersPerSec) =>
       speedInMetersPerSec * 2.23694;
 
-  
   void updateSafetyScore(
       AccelerometerEvent accEvent, double speed, double averageSpeed) {
     if (speed > 0.5) {
@@ -171,7 +203,6 @@ class _MyHomePageState extends State<MyHomePage> {
     Position? position = await Geolocator.getCurrentPosition();
 
     if (lastPosition != null) {
-      
       totalDistance += (Geolocator.distanceBetween(lastPosition!.latitude,
               lastPosition!.longitude, position.latitude, position.longitude) /
           1609.34);
@@ -181,13 +212,22 @@ class _MyHomePageState extends State<MyHomePage> {
     totalSpeed += speed;
     numUpdates++;
     averageSpeed = totalSpeed / numUpdates;
+    maxGs = max(maxGs, accEvent.x);
+    minGs = min(minGs, accEvent.x);
     updateSafetyScore(accEvent, speed, averageSpeed);
+  }
+
+  final DatabaseHelper dbHelper = DatabaseHelper();
+
+  void logTrip() async {
+    await dbHelper.logTrip(safetyScore, speed, averageSpeed, totalDistance, maxGs, minGs);
   }
 
   void toggleTracking() async {
     if (_isStarted) {
       setState(() {
         _isStarted = false;
+        logTrip();
         timer?.cancel();
         tripLogs.add(
           'Safety Score: ${safetyScore.toStringAsFixed(2)}, Speed: ${speed.toStringAsFixed(2)} mph, Average Speed: ${averageSpeed.toStringAsFixed(2)} mph, Total Distance: ${totalDistance.toStringAsFixed(2)} meters',
@@ -227,9 +267,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(score: safetyScore, context: context),
-      drawer: const Drawer(
-          
-          ),
+      drawer: const Drawer(),
       body: StreamBuilder<double>(
         stream: safetyScoreStream.stream,
         initialData: safetyScore,
@@ -253,17 +291,14 @@ class _MyHomePageState extends State<MyHomePage> {
                   onPressed: toggleTracking,
                   child: Text(_isStarted ? 'STOP' : 'START'),
                   style: ElevatedButton.styleFrom(
-                    primary: _isStarted
-                        ? Colors.red
-                        : Colors.teal, 
+                    primary: _isStarted ? Colors.red : Colors.teal,
                     onPrimary: Colors.white,
                     padding: EdgeInsets.symmetric(horizontal: 50, vertical: 20),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30.0),
                     ),
-                    shadowColor: _isStarted
-                        ? Colors.redAccent
-                        : Colors.tealAccent, 
+                    shadowColor:
+                        _isStarted ? Colors.redAccent : Colors.tealAccent,
                     elevation: 5,
                   ),
                 ),

@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:sqflite/sqflite.dart';
 
 class LeaderboardPage extends StatelessWidget {
-  // For demonstration purposes, using dummy data
-  // Replace this with actual data fetched from sqlite DB later
-  final List<Map<String, dynamic>> leaderboardData = List.generate(
-    10,
-    (index) => {'name': 'User ${index + 1}', 'score': (1000 - index * 50)},
-  );
+  Future<List<Map<String, dynamic>>> fetchLeaderboardData() async {
+    final Database db = await openDatabase('path_to_your_database');
+    final List<Map<String, dynamic>> result =
+        await db.rawQuery('SELECT * FROM your_table_name ORDER BY score DESC');
+    return result;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,31 +18,44 @@ class LeaderboardPage extends StatelessWidget {
         elevation: 5,
         shadowColor: Colors.tealAccent,
       ),
-      body: ListView.builder(
-        itemCount: leaderboardData.length,
-        itemBuilder: (context, index) {
-          return Card(
-            elevation: 2,
-            shadowColor: Colors.tealAccent,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10.0),
-            ),
-            child: ListTile(
-              leading: CircleAvatar(
-                backgroundColor: Colors.teal,
-                child:
-                    Text('${index + 1}', style: TextStyle(color: Colors.white)),
-              ),
-              title: Text(leaderboardData[index]['name'],
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              trailing: Text('${leaderboardData[index]['score']} pts',
-                  style: TextStyle(
-                      color: Colors.teal, fontWeight: FontWeight.bold)),
-              tileColor: index % 2 == 0
-                  ? Colors.teal.withOpacity(0.1)
-                  : Colors.transparent,
-            ),
-          );
+      body: FutureBuilder<List<Map<String, dynamic>>>(
+        future: fetchLeaderboardData(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return CircularProgressIndicator();
+          } else if (snapshot.hasError) {
+            return Text('Error: ${snapshot.error}');
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return Text('No data available');
+          } else {
+            return ListView.builder(
+              itemCount: snapshot.data!.length,
+              itemBuilder: (context, index) {
+                return Card(
+                  elevation: 2,
+                  shadowColor: Colors.tealAccent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: Colors.teal,
+                      child: Text('${index + 1}',
+                          style: TextStyle(color: Colors.white)),
+                    ),
+                    title: Text(snapshot.data![index]['name'],
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    trailing: Text('${snapshot.data![index]['score']} pts',
+                        style: TextStyle(
+                            color: Colors.teal, fontWeight: FontWeight.bold)),
+                    tileColor: index % 2 == 0
+                        ? Colors.teal.withOpacity(0.1)
+                        : Colors.transparent,
+                  ),
+                );
+              },
+            );
+          }
         },
       ),
     );
