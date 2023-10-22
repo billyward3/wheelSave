@@ -147,10 +147,24 @@ class _MyHomePageState extends State<MyHomePage> {
       AccelerometerEvent accEvent, double speed, double averageSpeed) {
     if (speed > 0.5) {
       if (accEvent.x > 4) {
-        safetyScore -= (0.2 * (accEvent.x - 3).clamp(0, 5));
+        double decrement = (0.2 * (accEvent.x - 3).clamp(0, 7));
+        // If the total distance is greater than 1 mile (you can adjust this as you see fit)
+        // normalize the decrement by dividing it by totalDistance (providing that totalDistance is greater than 1)
+        if (totalDistance > 1.0) {
+          decrement /= totalDistance;
+        }
+        
+        safetyScore -= decrement;
       }
       if (accEvent.x < 5) {
-        safetyScore -= (0.3 * (accEvent.x - 4).clamp(0, 5));
+        double decrement = (0.2 * (accEvent.x - 4).clamp(0, 11));
+        // If the total distance is greater than 1 mile (you can adjust this as you see fit)
+        // normalize the decrement by dividing it by totalDistance (providing that totalDistance is greater than 1)
+        if (totalDistance > 1.0) {
+          decrement /= totalDistance;
+        }
+        
+        safetyScore -= decrement;
       }
       safetyScore.clamp(0, 100);
     }
@@ -191,7 +205,9 @@ class _MyHomePageState extends State<MyHomePage> {
         DatabaseHelper.columnSafetyScore: safetyScore,
         DatabaseHelper.columnSpeed: speed,
         DatabaseHelper.columnAvgSpeed: averageSpeed,
-        DatabaseHelper.columnDistance: totalDistance
+        DatabaseHelper.columnDistance: totalDistance,
+        DatabaseHelper.columnMaxGs: maxGs,
+        DatabaseHelper.columnMinGs: minGs
         });
         tripLogs.add(
             'Safety Score: ${safetyScore.toStringAsFixed(2)}, Speed: ${speed.toStringAsFixed(2)} mph, Average Speed: ${averageSpeed.toStringAsFixed(2)} mph, Total Distance: ${totalDistance.toStringAsFixed(2)} miles');
