@@ -73,12 +73,12 @@ class _MyHomePageState extends State<MyHomePage> {
       AccelerometerEvent accEvent, double speed, double averageSpeed) {
     if (speed > 0.5) {
       if (accEvent.x > 4) {
-        safetyScore -= (0.2 * (accEvent.x - 3).clamp(0, 5)); 
+        safetyScore -= (0.2 * (accEvent.x - 3).clamp(0, 5));
       }
       if (accEvent.x < 5) {
-        safetyScore -= (0.3 * (accEvent.x - 4).clamp(0, 5)); 
+        safetyScore -= (0.3 * (accEvent.x - 4).clamp(0, 5));
       }
-      safetyScore.clamp(0, 100); 
+      safetyScore.clamp(0, 100);
     }
   }
 
@@ -90,7 +90,8 @@ class _MyHomePageState extends State<MyHomePage> {
     if (lastPosition != null) {
       // converted from meters to miles
       totalDistance += (Geolocator.distanceBetween(lastPosition!.latitude,
-          lastPosition!.longitude, position.latitude, position.longitude) / 1609.34);
+              lastPosition!.longitude, position.latitude, position.longitude) /
+          1609.34);
     }
     lastPosition = position;
     speed = metersPerSecToMilesPerHour(position.speed);
