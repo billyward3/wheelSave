@@ -59,7 +59,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   // Variables for sensor data.
   AccelerometerEvent? _accelerometerEvent;
-  MagnetometerEvent? _magnetometerEvent;
 
   // Variables for logs and state.
   bool _isStarted = false;
@@ -73,12 +72,13 @@ class _MyHomePageState extends State<MyHomePage> {
   void updateSafetyScore(
       AccelerometerEvent accEvent, double speed, double averageSpeed) {
     if (speed > 0.5) {
-      safetyScore = (safetyScore -
-              ((0.3 * (accEvent.x.abs() + accEvent.y.abs() + accEvent.z.abs()) +
-                      0.4 * speed +
-                      0.3 * averageSpeed) /
-                  100))
-          .clamp(0.0, 100.0);
+      if (accEvent.x > 4) {
+        safetyScore -= (0.2 * (accEvent.x - 3).clamp(0, 5)); 
+      }
+      if (accEvent.x < 5) {
+        safetyScore -= (0.3 * (accEvent.x - 4).clamp(0, 5)); 
+      }
+      safetyScore.clamp(0, 100); 
     }
   }
 
@@ -87,15 +87,16 @@ class _MyHomePageState extends State<MyHomePage> {
     AccelerometerEvent accEvent = await accelerometerEvents.first;
     Position? position = await Geolocator.getCurrentPosition();
 
-    if (lastPosition != null && position != null) {
-      totalDistance += Geolocator.distanceBetween(lastPosition!.latitude,
-          lastPosition!.longitude, position.latitude, position.longitude);
+    if (lastPosition != null) {
+      // converted from meters to miles
+      totalDistance += (Geolocator.distanceBetween(lastPosition!.latitude,
+          lastPosition!.longitude, position.latitude, position.longitude) / 1609.34);
     }
     lastPosition = position;
-    speed = metersPerSecToMilesPerHour(position?.speed ?? 0);
+    speed = metersPerSecToMilesPerHour(position.speed);
     totalSpeed += speed;
     numUpdates++;
-    averageSpeed = metersPerSecToMilesPerHour(totalSpeed / numUpdates);
+    averageSpeed = totalSpeed / numUpdates;
     updateSafetyScore(accEvent, speed, averageSpeed);
   }
 
@@ -106,7 +107,7 @@ class _MyHomePageState extends State<MyHomePage> {
         _isStarted = false;
         timer?.cancel();
         tripLogs.add(
-            'Safety Score: ${safetyScore.toStringAsFixed(2)}, Speed: ${speed.toStringAsFixed(2)} mph, Average Speed: ${averageSpeed.toStringAsFixed(2)} mph, Total Distance: ${totalDistance.toStringAsFixed(2)} meters');
+            'Safety Score: ${safetyScore.toStringAsFixed(2)}, Speed: ${speed.toStringAsFixed(2)} mph, Average Speed: ${averageSpeed.toStringAsFixed(2)} mph, Total Distance: ${totalDistance.toStringAsFixed(2)} miles');
         totalSpeed = 0.0;
         totalDistance = 0.0;
         numUpdates = 0;
@@ -146,8 +147,6 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     accelerometerEvents
         .listen((event) => setState(() => _accelerometerEvent = event));
-    magnetometerEvents
-        .listen((event) => setState(() => _magnetometerEvent = event));
   }
 
   @override
@@ -177,10 +176,7 @@ class _MyHomePageState extends State<MyHomePage> {
               Text(
                   'Accelerometer Data: x: ${_accelerometerEvent?.x ?? 0}, y: ${_accelerometerEvent?.y ?? 0}, z: ${_accelerometerEvent?.z ?? 0}',
                   style: TextStyle(color: Colors.white)),
-              Text(
-                  'Magnetometer Data: x: ${_magnetometerEvent?.x ?? 0}, y: ${_magnetometerEvent?.y ?? 0}, z: ${_magnetometerEvent?.z ?? 0}',
-                  style: TextStyle(color: Colors.white)),
-              Text('Total Distance: ${totalDistance.toStringAsFixed(2)} meters',
+              Text('Total Distance: ${totalDistance.toStringAsFixed(2)} miles',
                   style: TextStyle(color: Colors.white)),
               ElevatedButton(
                   onPressed: toggleTracking,
