@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:rate_ride/pages/export.dart'; // Import your ExportPage here
+import 'package:rate_ride/pages/export.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'tripHistory.dart';
 
@@ -215,12 +215,9 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Image(
-                image: AssetImage(
-                    'assets/Logo.png')), // Load and display the image
+            const Image(image: AssetImage('assets/Logo.png')),
             Padding(
-              padding: const EdgeInsets.only(
-                  top: 20.0), // Add space only above this text
+              padding: const EdgeInsets.only(top: 20.0),
               child: Text(
                 'Safety Score',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
@@ -262,7 +259,7 @@ class _MyHomePageState extends State<MyHomePage> {
           BottomNavigationBarItem(
             icon: Icon(Icons.trending_up),
             label: 'Export',
-          ), // Change 'Leaderboard' to 'Export'
+          ),
         ],
         onTap: (index) {
           if (index == 1) {
@@ -276,7 +273,7 @@ class _MyHomePageState extends State<MyHomePage> {
               context,
               MaterialPageRoute(
                 builder: (context) => ExportPage(),
-              ), // Change to ExportPage
+              ),
             );
           }
         },
