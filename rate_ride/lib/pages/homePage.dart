@@ -118,6 +118,10 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.white,
       ),
       home: const MyHomePage(title: 'Rate Ride'),
+      routes: {
+        '/profile': (context) => const ProfilePage(),
+        '/settings': (context) => const SettingsPage(),
+      },
     );
   }
 }
@@ -256,7 +260,39 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(score: safetyScore, context: context),
-      drawer: const Drawer(),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.teal,
+              ),
+              child: Text(
+                'Rate Ride',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                ),
+              ),
+            ),
+            ListTile(
+              title: Text('Profile'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/profile');
+              },
+            ),
+            ListTile(
+              title: Text('Settings'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/settings');
+              },
+            ),
+          ],
+        ),
+      ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -280,8 +316,10 @@ class _MyHomePageState extends State<MyHomePage> {
             ElevatedButton(
               onPressed: toggleTracking,
               style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.white, backgroundColor: _isStarted ? Colors.red : Colors.teal,
-                padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
+                foregroundColor: Colors.white,
+                backgroundColor: _isStarted ? Colors.red : Colors.teal,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30.0),
                 ),
@@ -314,6 +352,50 @@ class _MyHomePageState extends State<MyHomePage> {
             );
           }
         },
+      ),
+    );
+  }
+}
+
+class ProfilePage extends StatelessWidget {
+  const ProfilePage({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Profile'),
+        backgroundColor: Colors.teal,
+        elevation: 5,
+        shadowColor: Colors.tealAccent,
+      ),
+      body: Center(
+        child: const Text(
+          'This is the Profile Page',
+          style: TextStyle(fontSize: 24),
+        ),
+      ),
+    );
+  }
+}
+
+class SettingsPage extends StatelessWidget {
+  const SettingsPage({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Settings'),
+        backgroundColor: Colors.teal,
+        elevation: 5,
+        shadowColor: Colors.tealAccent,
+      ),
+      body: Center(
+        child: const Text(
+          'This is the Settings Page',
+          style: TextStyle(fontSize: 24),
+        ),
       ),
     );
   }

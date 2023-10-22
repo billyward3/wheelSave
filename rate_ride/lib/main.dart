@@ -16,10 +16,12 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       initialRoute: '/',
       routes: {
-        '/': (context) => const MyHomePage(title: 'Safety Score Tracker'),  // Provide the required 'title' parameter
+        '/': (context) => const MyHomePage(
+            title:
+                'Safety Score Tracker'), // Provide the required 'title' parameter
         '/register': (context) => const RegisterPage(),
         '/login': (context) => const LoginPage(),
-        '/tripHistory': (context) =>  TripHistoryPage(),
+        '/tripHistory': (context) => TripHistoryPage(),
       },
     );
   }
