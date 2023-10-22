@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'pages/register.dart';
-import 'pages/login.dart';
 import 'pages/tripHistory.dart';
 import 'pages/homePage.dart';
 
@@ -19,8 +17,6 @@ class MyApp extends StatelessWidget {
         '/': (context) => const MyHomePage(
             title:
                 'Safety Score Tracker'), // Provide the required 'title' parameter
-        '/register': (context) => const RegisterPage(),
-        '/login': (context) => const LoginPage(),
         '/tripHistory': (context) => TripHistoryPage(),
       },
     );

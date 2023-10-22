@@ -4,40 +4,6 @@ import 'package:geolocator/geolocator.dart';
 import 'package:rate_ride/pages/leaderboard.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'tripHistory.dart';
-import 'register.dart';
-
-class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
-  final double score;
-  const CustomAppBar(
-      {super.key, required this.score, required BuildContext context});
-
-  @override
-  Widget build(BuildContext context) {
-    return AppBar(
-      leading: IconButton(
-        icon: const Icon(Icons.menu, color: Colors.black),
-        onPressed: () => Scaffold.of(context).openDrawer(),
-      ),
-      centerTitle: true,
-      elevation: 2,
-      backgroundColor: Colors.white,
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.logout, color: Colors.black),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const RegisterPage()),
-            );
-          },
-        ),
-      ],
-    );
-  }
-
-  @override
-  Size get preferredSize => const Size.fromHeight(100.0);
-}
 
 class SafetyInfo extends StatelessWidget {
   final String title;
@@ -118,10 +84,6 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.white,
       ),
       home: const MyHomePage(title: 'Rate Ride'),
-      routes: {
-        '/profile': (context) => const ProfilePage(),
-        '/settings': (context) => const SettingsPage(),
-      },
     );
   }
 }
@@ -190,7 +152,7 @@ class _MyHomePageState extends State<MyHomePage> {
         speedStream.add(speed);
         updateSafetyScore(accEvent, speed, averageSpeed);
 
-        await Future.delayed(const Duration(seconds: 1));
+        await Future.delayed(Duration(seconds: 1));
       } catch (e) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(e.toString())));
@@ -259,51 +221,18 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(score: safetyScore, context: context),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.teal,
-              ),
-              child: Text(
-                'Rate Ride',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                ),
-              ),
-            ),
-            ListTile(
-              title: Text('Profile'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/profile');
-              },
-            ),
-            ListTile(
-              title: Text('Settings'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/settings');
-              },
-            ),
-          ],
-        ),
-      ),
+      drawer: const Drawer(),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
+            Text(
               'Safety Score',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             Text(
-              safetyScore.toStringAsFixed(2),
-              style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
+              '${safetyScore.toStringAsFixed(2)}',
+              style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
             ),
             SafetyInfo(
               title: 'Speed',
@@ -315,18 +244,17 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             ElevatedButton(
               onPressed: toggleTracking,
+              child: Text(_isStarted ? 'STOP' : 'START'),
               style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.white,
-                backgroundColor: _isStarted ? Colors.red : Colors.teal,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
+                primary: _isStarted ? Colors.red : Colors.teal,
+                onPrimary: Colors.white,
+                padding: EdgeInsets.symmetric(horizontal: 50, vertical: 20),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30.0),
                 ),
                 shadowColor: _isStarted ? Colors.redAccent : Colors.tealAccent,
                 elevation: 5,
               ),
-              child: Text(_isStarted ? 'STOP' : 'START'),
             ),
           ],
         ),
@@ -348,54 +276,10 @@ class _MyHomePageState extends State<MyHomePage> {
           if (index == 2) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const LeaderboardPage()),
+              MaterialPageRoute(builder: (context) => LeaderboardPage()),
             );
           }
         },
-      ),
-    );
-  }
-}
-
-class ProfilePage extends StatelessWidget {
-  const ProfilePage({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Profile'),
-        backgroundColor: Colors.teal,
-        elevation: 5,
-        shadowColor: Colors.tealAccent,
-      ),
-      body: Center(
-        child: const Text(
-          'This is the Profile Page',
-          style: TextStyle(fontSize: 24),
-        ),
-      ),
-    );
-  }
-}
-
-class SettingsPage extends StatelessWidget {
-  const SettingsPage({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-        backgroundColor: Colors.teal,
-        elevation: 5,
-        shadowColor: Colors.tealAccent,
-      ),
-      body: Center(
-        child: const Text(
-          'This is the Settings Page',
-          style: TextStyle(fontSize: 24),
-        ),
       ),
     );
   }
