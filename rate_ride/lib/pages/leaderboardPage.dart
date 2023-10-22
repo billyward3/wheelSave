@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 
 class LeaderboardPage extends StatelessWidget {
+  const LeaderboardPage({super.key});
+
   Future<List<Map<String, dynamic>>> fetchLeaderboardData() async {
     final Database db = await openDatabase('path_to_your_database');
     final List<Map<String, dynamic>> result =
@@ -22,11 +24,11 @@ class LeaderboardPage extends StatelessWidget {
         future: fetchLeaderboardData(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return CircularProgressIndicator();
+            return const CircularProgressIndicator();
           } else if (snapshot.hasError) {
             return Text('Error: ${snapshot.error}');
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Text('No data available');
+            return const Text('No data available');
           } else {
             return ListView.builder(
               itemCount: snapshot.data!.length,
@@ -41,12 +43,12 @@ class LeaderboardPage extends StatelessWidget {
                     leading: CircleAvatar(
                       backgroundColor: Colors.teal,
                       child: Text('${index + 1}',
-                          style: TextStyle(color: Colors.white)),
+                          style: const TextStyle(color: Colors.white)),
                     ),
                     title: Text(snapshot.data![index]['name'],
-                        style: TextStyle(fontWeight: FontWeight.bold)),
+                        style: const TextStyle(fontWeight: FontWeight.bold)),
                     trailing: Text('${snapshot.data![index]['score']} pts',
-                        style: TextStyle(
+                        style: const TextStyle(
                             color: Colors.teal, fontWeight: FontWeight.bold)),
                     tileColor: index % 2 == 0
                         ? Colors.teal.withOpacity(0.1)

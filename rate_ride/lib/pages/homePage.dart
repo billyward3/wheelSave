@@ -276,12 +276,12 @@ class _MyHomePageState extends State<MyHomePage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text('Safety Score',
+                const Text('Safety Score',
                     style:
                         TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
                 Text('${snapshot.data?.toStringAsFixed(2)}',
                     style:
-                        TextStyle(fontSize: 48, fontWeight: FontWeight.bold)),
+                        const TextStyle(fontSize: 48, fontWeight: FontWeight.bold)),
                 SafetyInfo(
                     title: 'Speed', value: '${speed.toStringAsFixed(2)} mph'),
                 SafetyInfo(
@@ -289,11 +289,9 @@ class _MyHomePageState extends State<MyHomePage> {
                     value: '${averageSpeed.toStringAsFixed(2)} mph'),
                 ElevatedButton(
                   onPressed: toggleTracking,
-                  child: Text(_isStarted ? 'STOP' : 'START'),
                   style: ElevatedButton.styleFrom(
-                    primary: _isStarted ? Colors.red : Colors.teal,
-                    onPrimary: Colors.white,
-                    padding: EdgeInsets.symmetric(horizontal: 50, vertical: 20),
+                    foregroundColor: Colors.white, backgroundColor: _isStarted ? Colors.red : Colors.teal,
+                    padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30.0),
                     ),
@@ -301,6 +299,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         _isStarted ? Colors.redAccent : Colors.tealAccent,
                     elevation: 5,
                   ),
+                  child: Text(_isStarted ? 'STOP' : 'START'),
                 ),
               ],
             ),

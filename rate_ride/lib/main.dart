@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import 'pages/registerPage.dart';
 import 'pages/loginPage.dart';
 import 'pages/tripHistory.dart';
@@ -86,7 +87,7 @@ class DatabaseHelper {
     List<Map> res = await db.rawQuery(
         'SELECT * FROM $tableUsers WHERE $columnEmail = ? AND $columnHashedPassword = ?',
         [email, hashedPassword]);
-    return res.length > 0;
+    return res.isNotEmpty;
   }
 
   Future<int> insert(Map<String, dynamic> row) async {
