@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'login.dart';
 
 class RegisterPage extends StatelessWidget {
   const RegisterPage({super.key});
@@ -23,6 +24,18 @@ class RegisterPage extends StatelessWidget {
                 // TODO: Add Firebase register logic here
               },
               child: const Text('Register'),
+            ),
+            // Added "Already Registered?" button here
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const LoginPage(),
+                  )
+                );
+              },
+              child: const Text('Already Registered?'),
             ),
           ],
         ),

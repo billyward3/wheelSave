@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'tripHistory.dart';
+import 'register.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final double score;
@@ -35,7 +36,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const SignOutPage()),
+              MaterialPageRoute(builder: (context) => const RegisterPage()),
             );
           },
         ),
@@ -136,31 +137,6 @@ class MyHomePage extends StatefulWidget {
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
-}
-
-class SignOutPage extends StatelessWidget {
-  const SignOutPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Sign Out')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text('Are you sure you want to sign out?'),
-            ElevatedButton(
-              onPressed: () {
-                // Handle sign out logic here
-              },
-              child: const Text('Sign Out'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 class _MyHomePageState extends State<MyHomePage> {
@@ -275,6 +251,23 @@ class _MyHomePageState extends State<MyHomePage> {
                     title: 'Average Speed',
                     value: '${averageSpeed.toStringAsFixed(2)} mph'),
                 ControlButton(isStarted: _isStarted, onPressed: toggleTracking),
+                // Added Sign Out button here
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const RegisterPage(),
+                      ));
+                  },
+                  child: const Text('Sign Out'),
+                  style: ElevatedButton.styleFrom(
+                    primary: Colors.red,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 30, vertical: 10),
+                    textStyle: const TextStyle(fontSize: 16),
+                  ),
+                ),
               ],
             ),
           );
@@ -285,7 +278,7 @@ class _MyHomePageState extends State<MyHomePage> {
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.drive_eta), label: 'Trips'),
           BottomNavigationBarItem(
-              icon: Icon(Icons.trending_up), label: 'Improve'),
+              icon: Icon(Icons.trending_up), label: 'Leaderboard'),
         ],
         onTap: (index) {
           if (index == 1) {
