@@ -2,7 +2,79 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:sensors_plus/sensors_plus.dart';
+import 'package:sqflite/sqflite.dart';
+import 'dart:io';
+import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 
+class DatabaseHelper {
+  static const _databaseName = "TripDatabase.db";
+  static const _databaseVersion = 1;
+
+  static const tableTrips = 'trips';
+
+  static const columnId = '_id';
+  static const columnSafetyScore = 'safetyScore';
+  static const columnSpeed = 'speed';
+  static const columnAvgSpeed = 'avgSpeed';
+  static const columnDistance = 'distance';
+  static const columnMaxGs = 'maxGs';
+  static const columnMinGs = 'minGs';
+
+  // singleton class
+  DatabaseHelper._privateConstructor();
+  static final DatabaseHelper instance = DatabaseHelper._privateConstructor();
+
+  // single database instance
+  static Database? _database;
+  Future<Database> get database async {
+    if (_database != null) return _database!;
+    _database = await _initDatabase();
+    return _database!;
+  }
+
+  // Open the database or create one if it doesn't exist
+  _initDatabase() async {
+    Directory documentsDir = await getApplicationDocumentsDirectory();
+    String path = join(documentsDir.path, _databaseName);
+    return await openDatabase(path,
+        version: _databaseVersion, onCreate: _onCreate);
+  }
+
+  // SQL code to create the database table
+  Future _onCreate(Database db, int version) async {
+    await db.execute('''
+          CREATE TABLE $tableTrips (
+            $columnId INTEGER PRIMARY KEY,
+            $columnSafetyScore REAL,
+            $columnSpeed REAL,
+            $columnAvgSpeed REAL,
+            $columnDistance REAL,
+            $columnMaxGs REAL,
+            $columnMinGs REAL
+          )
+          ''');
+  }
+
+  // Database insert operation
+  Future<int> insert(Map<String, dynamic> row) async {
+    Database db = await instance.database;
+    return await db.insert(tableTrips, row);
+  }
+
+  // Database retrieve all operation
+  Future<List<Map<String, dynamic>>> queryAllRows() async {
+    Database db = await instance.database;
+    return await db.query(tableTrips);
+  }
+
+  // Database get number of records operation
+  Future<int> queryRowCount() async {
+    Database db = await instance.database;
+    return Sqflite.firstIntValue(
+        await db.rawQuery('SELECT COUNT(*) FROM $tableTrips')) as int;
+  }
+}
 // Service to handle Geolocator permissions and position.
 class GeolocatorService {
   Future<Position?> determinePosition() async {
@@ -54,6 +126,8 @@ class _MyHomePageState extends State<MyHomePage> {
   double speed = 0.0;
   double averageSpeed = 0.0;
   double totalSpeed = 0.0;
+  double maxGs = 0.0;
+  double minGs = 0.0;
   int numUpdates = 0;
   Position? lastPosition;
 
@@ -97,6 +171,12 @@ class _MyHomePageState extends State<MyHomePage> {
     speed = metersPerSecToMilesPerHour(position.speed);
     totalSpeed += speed;
     numUpdates++;
+    if (accEvent.x > maxGs) {
+      maxGs = accEvent.x;
+    }
+    if (accEvent.x < minGs) {
+      minGs = accEvent.x;
+    }
     averageSpeed = totalSpeed / numUpdates;
     updateSafetyScore(accEvent, speed, averageSpeed);
   }
@@ -107,6 +187,12 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() {
         _isStarted = false;
         timer?.cancel();
+        DatabaseHelper.instance.insert({
+        DatabaseHelper.columnSafetyScore: safetyScore,
+        DatabaseHelper.columnSpeed: speed,
+        DatabaseHelper.columnAvgSpeed: averageSpeed,
+        DatabaseHelper.columnDistance: totalDistance
+        });
         tripLogs.add(
             'Safety Score: ${safetyScore.toStringAsFixed(2)}, Speed: ${speed.toStringAsFixed(2)} mph, Average Speed: ${averageSpeed.toStringAsFixed(2)} mph, Total Distance: ${totalDistance.toStringAsFixed(2)} miles');
         totalSpeed = 0.0;
@@ -119,7 +205,7 @@ class _MyHomePageState extends State<MyHomePage> {
         setState(() {
           _isStarted = true;
           _locationData = Future.value(position);
-          timer = Timer.periodic(Duration(seconds: 1), (timer) async {
+          timer = Timer.periodic(const Duration(seconds: 1), (timer) async {
             recordData();
             setState(() {});
           });
