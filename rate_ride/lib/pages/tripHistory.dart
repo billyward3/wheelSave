@@ -52,7 +52,7 @@ class TripHistoryPage extends StatelessWidget {
                     '${trips[index].startLocation} to ${trips[index].endLocation}',
                     style: const TextStyle(fontWeight: FontWeight.bold)),
                 subtitle: Text(
-                    '${trips[index].distanceTraveled} km at ${trips[index].averageSpeed} km/h'),
+                    '${trips[index].distanceTraveled} miles at ${trips[index].averageSpeed} mph',),
                 tileColor: index % 2 == 0
                     ? Colors.teal.withOpacity(0.1)
                     : Colors.transparent,
