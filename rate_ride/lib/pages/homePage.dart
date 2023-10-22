@@ -7,6 +7,7 @@ import 'package:sensors_plus/sensors_plus.dart';
 import 'tripHistory.dart';
 import 'register.dart';
 
+// CustomAppBar now has the Sign Out button at the top and lowers the safety score
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final double score;
   const CustomAppBar(
@@ -15,24 +16,18 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      centerTitle: true,
-      title: Column(
-        children: [
-          const Text(
-            'Safety score',
-            style: TextStyle(color: Colors.black, fontSize: 16),
-          ),
-          Text(
-            '$score',
-            style: const TextStyle(color: Colors.black, fontSize: 36),
-          ),
-        ],
+      leading: IconButton(
+        // Add leading IconButton to fix invisible hamburger icon
+        icon: const Icon(Icons.menu, color: Colors.black),
+        onPressed: () => Scaffold.of(context).openDrawer(),
       ),
+      centerTitle: true,
       elevation: 2,
       backgroundColor: Colors.white,
       actions: [
         IconButton(
-          icon: const Icon(Icons.logout),
+          icon: const Icon(Icons.logout,
+              color: Colors.black), // Update icon color
           onPressed: () {
             Navigator.push(
               context,
@@ -149,7 +144,6 @@ class _MyHomePageState extends State<MyHomePage> {
   double totalSpeed = 0.0;
   int numUpdates = 0;
   Position? lastPosition;
-  AccelerometerEvent? _accelerometerEvent;
   StreamController<double> safetyScoreStream =
       StreamController<double>.broadcast();
 
@@ -245,27 +239,33 @@ class _MyHomePageState extends State<MyHomePage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                Text('Safety Score',
+                    style:
+                        TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                Text('${snapshot.data?.toStringAsFixed(2)}',
+                    style:
+                        TextStyle(fontSize: 48, fontWeight: FontWeight.bold)),
                 SafetyInfo(
                     title: 'Speed', value: '${speed.toStringAsFixed(2)} mph'),
                 SafetyInfo(
                     title: 'Average Speed',
                     value: '${averageSpeed.toStringAsFixed(2)} mph'),
-                ControlButton(isStarted: _isStarted, onPressed: toggleTracking),
-                // Added Sign Out button here
                 ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const RegisterPage(),
-                      ));
-                  },
-                  child: const Text('Sign Out'),
+                  onPressed: toggleTracking,
+                  child: Text(_isStarted ? 'STOP' : 'START'),
                   style: ElevatedButton.styleFrom(
-                    primary: Colors.red,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 30, vertical: 10),
-                    textStyle: const TextStyle(fontSize: 16),
+                    primary: _isStarted
+                        ? Colors.red
+                        : Colors.teal, // Conditional color change
+                    onPrimary: Colors.white,
+                    padding: EdgeInsets.symmetric(horizontal: 50, vertical: 20),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30.0),
+                    ),
+                    shadowColor: _isStarted
+                        ? Colors.redAccent
+                        : Colors.tealAccent, // Conditional shadow color change
+                    elevation: 5,
                   ),
                 ),
               ],
